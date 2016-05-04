@@ -33,7 +33,11 @@ function print_help {
   echo
   echo "  -2   use python 2"
   echo "  -3   use python 3 (default)"
+  echo "  -d   install specified Django version (use '==1.8' to install v1.8)"
+  echo "       you can use >,<,>=,<=,== to specify version"
   echo "  -g   clone specified git repo instead of initializing a new one"
+  echo "       if requirements.txt is present in the toplevel directory"
+  echo "       the repository, pip install -r requirements.txt is run"
   echo "  -h   show this help"
   echo
   echo "  PROJECT specifies the project name. New directory with that name"
