@@ -3,6 +3,7 @@
 PYTHON_VER=3
 DJANGO_VER=
 GIT_REMOTE=
+GIT_BRANCH=
 VENV_DIR="pyvenv"
 SOURCE_DIR="source"
 
@@ -29,7 +30,7 @@ fi
 
 function print_help {
   PROGRAM_NAME=`basename "$0"`
-  echo "Usage: $PROGRAM_NAME PROJECT"
+  echo "Usage: $PROGRAM_NAME [OPTION...] PROJECT"
   echo
   echo "  -2   use python 2"
   echo "  -3   use python 3 (default)"
@@ -38,6 +39,7 @@ function print_help {
   echo "  -g   clone specified git repo instead of initializing a new one"
   echo "       if requirements.txt is present in the toplevel directory"
   echo "       the repository, pip install -r requirements.txt is run"
+  echo "  -b   checkout given git branch"
   echo "  -h   show this help"
   echo
   echo "  PROJECT specifies the project name. New directory with that name"
@@ -49,7 +51,7 @@ function print_help {
 # parse options #
 #################
 
-while getopts "23d:g:h" opt
+while getopts "23b:d:g:h" opt
 do
   case "$opt" in
     2)
@@ -57,6 +59,9 @@ do
       ;;
     3)
       PYTHON_VER=3
+      ;;
+    b)
+      GIT_BRANCH="$OPTARG"
       ;;
     d)
       DJANGO_VER="$OPTARG"
@@ -66,6 +71,7 @@ do
       ;;
     h)
       print_help;
+      exit 0;
       ;;
     \?)
       echo "Unknown option: -$OPTARG" >&2
@@ -116,15 +122,22 @@ cd "$PROJECT"
 # init python virtual environment
 $VENV_CREATE "$VENV_DIR"
 
+. "$VENV_DIR/bin/activate"
+
 if [[ -n "$GIT_REMOTE" ]]
 then
   # clone git repo
   message "cloning repository"
   git clone "$GIT_REMOTE" "$SOURCE_DIR"
+  # checkout given branch if specified
+  cd "$SOURCE_DIR"
+  [[ -n "$GIT_BRANCH" ]] && git checkout "$GIT_BRANCH"
+
+  # if requirements.txt, install it
+  [[ -f "requirements.txt" ]] && pip install -r "requirements.txt"
 else
   # activate venv and install django
   message "installing django"
-  . "$VENV_DIR/bin/activate"
   pip install "django$DJANGO_VER"
 
   message "creating new django project"
